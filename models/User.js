@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-// Define the schema for items in the user's cart
+// --- UPDATED: CartItemSchema now includes color and size ---
 const CartItemSchema = new mongoose.Schema({
   product: {
     type: mongoose.Schema.Types.ObjectId,
@@ -13,9 +13,19 @@ const CartItemSchema = new mongoose.Schema({
     min: 1,
     default: 1,
   },
+  // --- NEW: Variant details ---
+  color: {
+    type: String,
+    required: true,
+      },
+  size: {
+    type: String,
+    required: true,
+  },
 });
+// --- End of update ---
 
-// --- NEW: Sub-schema for storable user addresses ---
+// Sub-schema for storable user addresses
 const AddressSchema = new mongoose.Schema({
   label: {
     type: String, // e.g., "Home", "Work"
@@ -38,14 +48,16 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     match: [/.+\@.+\..+/, 'Please provide a valid email address.'],
   },
+  image: {
+    type: String,
+    default: null,
+  },
   password: {
     type: String,
     // Password is not required if the user signs up via OAuth (Google/Facebook)
   },
-  // --- NEW: Phone / Mobile ---
   mobile: {
     type: String,
-    // Using a simple regex for basic validation
     match: [/^[0-9]{10}$/, 'Please provide a valid 10-digit mobile number.'],
   },
   alternateMobile: {
@@ -57,30 +69,25 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
-  // --- OAuth Fields ---
   googleId: {
     type: String,
   },
   facebookId: {
     type: String,
-  },
-  // --- E-commerce Fields ---
+  }, 
   orders: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Order', // Reference to the Order model
   }],
-  // --- NEW: Stored addresses for faster checkout ---
   addresses: [AddressSchema],
-  // We are embedding the cart directly in the user model for simplicity
+  
+  // This 'cart' field now uses the updated CartItemSchema
   cart: [CartItemSchema],
 }, {
-  // timestamps: true adds 'createdAt' and 'updatedAt' fields automatically
   timestamps: true 
 });
 
 /**
  * Prevent Mongoose from recompiling the model.
- * This is useful in a development environment where Next.js hot-reloads.
- * The 'mongoose.models.User' check sees if the model has already been defined.
  */
 export default mongoose.models.User || mongoose.model('User', UserSchema);
