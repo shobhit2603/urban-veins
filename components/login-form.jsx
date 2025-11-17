@@ -48,6 +48,9 @@ export function LoginForm({
         password: password,
       })
 
+      console.log(result);
+      
+
       if (result.error) {
         // Login failed. 'result.error' will contain our
         // backend error message ("Invalid email or password.")
