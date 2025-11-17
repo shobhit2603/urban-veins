@@ -12,12 +12,47 @@ import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
+import { signIn } from "next-auth/react"
 
 export function LoginForm({
   className,
   ...props
 }) {
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    const result = await signIn('credentials', {
+      // This is crucial: 'redirect: false'
+      // It tells Next-Auth not to reload the page.
+      // We will handle the result ourselves.
+      redirect: false,
+      email: email,
+      password: password,
+    });
+
+    if (result.error) {
+      // Login failed. 'result.error' will contain our
+      // backend error message ("Invalid email or password.")
+      setError(result.error);
+      console.error(result.error);
+    } else {
+      // Login was successful!
+      // The session is now active, and useSession() will update.
+      // You can now redirect the user.
+      router.push('/');
+
+      // For our test, we just reloaded the page
+      window.location.reload();
+    }
+  };
+
+
   return (
     <div className={cn("flex flex-col gap-6 p-10 rounded-4xl bg-neutral-100 border-3", className)} {...props}>
       <form>
@@ -52,7 +87,7 @@ export function LoginForm({
             </div>
           </Field>
           <Field>
-            <Button type="submit">Login</Button>
+            <Button type="submit" onClick={handleSubmit}>Login</Button>
           </Field>
           <FieldSeparator>Or continue with</FieldSeparator>
           <Field className="grid gap-4 sm:grid-cols-2">
