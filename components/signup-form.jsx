@@ -19,7 +19,7 @@ export function SignupForm({
 }) {
     const [showPassword, setShowPassword] = useState(false)
     return (
-        <div className={cn("flex flex-col gap-6", className)} {...props}>
+        <div className={cn("flex flex-col gap-6 py-6 px-10 rounded-4xl bg-neutral-100 border-3", className)} {...props}>
             <form>
                 <FieldGroup>
                     <div className="flex flex-col items-center gap-2 text-center">
@@ -28,6 +28,17 @@ export function SignupForm({
                             Welcome! Create a new account.
                         </FieldDescription>
                     </div>
+                    <Field className="grid gap-4 sm:grid-cols-2">
+                        <Button variant="outline" type="button">
+                            <Image src="/Google-Icon.svg" alt="Google logo" width={20} height={20} />
+                            Google
+                        </Button>
+                        <Button variant="outline" type="button">
+                            <Image src="/Facebook-Icon.svg" alt="Facebook logo" width={20} height={20} />
+                            Facebook
+                        </Button>
+                    </Field>
+                            <FieldSeparator>Or continue with</FieldSeparator>
                     <Field>
                         <FieldLabel htmlFor="name">Full Name</FieldLabel>
                         <Input id="name" type="text" placeholder="Enter your full name" required />
@@ -38,7 +49,7 @@ export function SignupForm({
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="number">Phone Number</FieldLabel>
-                        <Input id="number" type="tel" placeholder="Enter your number" required />
+                        <Input id="number" type="tel" placeholder="Enter phone number" required />
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="password">Password</FieldLabel>
@@ -60,38 +71,9 @@ export function SignupForm({
                         </div>
                     </Field>
                     <Field>
-                        <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-                        <div className="relative">
-                            <Input
-                                id="confirm-password"
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Confirm your password"
-                                required
-                                className="pr-12"
-                            />
-                            <button
-                                type="button"
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer"
-                                onClick={() => setShowPassword((prev) => !prev)}
-                            >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                        </div>
-                    </Field>
-                    <Field>
                         <Button type="submit">Create Account</Button>
                     </Field>
-                    <FieldSeparator>Or signup with</FieldSeparator>
-                    <Field className="grid gap-4 sm:grid-cols-2">
-                        <Button variant="outline" type="button">
-                            <Image src="/Google-Icon.svg" alt="Google logo" width={20} height={20} />
-                            Google
-                        </Button>
-                        <Button variant="outline" type="button">
-                            <Image src="/Facebook-Icon.svg" alt="Facebook logo" width={20} height={20} />
-                            Facebook
-                        </Button>
-                    </Field>
+                    
                     <FieldDescription className='items-center text-center'>
                         Already have an account? <a href="/login">Login</a>
                     </FieldDescription>
