@@ -47,12 +47,6 @@ const ProductSchema = new mongoose.Schema({
     ref: 'Category', // Reference to the Category model
     required: [true, 'Please provide a category.'],
   },
-  // --- UPDATED: 'stock' is now part of the 'variants' array ---
-  // stock: {
-  //   type: Number,
-  //   required: [true, 'Please provide stock quantity.'],
-  //   default: 0,
-  // },
 
   // --- NEW: 'variants' array ---
   variants: [VariantSchema],
