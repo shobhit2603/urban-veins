@@ -20,6 +20,10 @@ export async function PUT(request, { params }) {
     // 2. Get the Order ID from the URL params
     const unwrappedParams = await params;
     const { id } = unwrappedParams;
+
+    // DEBUG LOG: Check if we are hitting the route
+    console.log("--- ADMIN ORDER UPDATE ---");
+    console.log("Updating Order ID:", id);
     
     if (!id) {
         return NextResponse.json({ message: 'Order ID is required' }, { status: 400 });
@@ -27,6 +31,7 @@ export async function PUT(request, { params }) {
 
     // 3. Get the new status from the request body
     const { orderStatus } = await request.json();
+    console.log("New Status:", orderStatus);
 
     // 4. Validate the new status
     const validStatuses = ['processing', 'shipped', 'delivered', 'cancelled'];
@@ -41,10 +46,11 @@ export async function PUT(request, { params }) {
     const updatedOrder = await Order.findByIdAndUpdate(
       id,
       { orderStatus: orderStatus },
-      { new: true } // Return the updated document
+      { new: true } 
     );
 
     if (!updatedOrder) {
+      console.error("Order not found in database for ID:", id);
       return NextResponse.json({ message: 'Order not found' }, { status: 404 });
     }
 
