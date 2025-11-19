@@ -34,41 +34,52 @@ export function LoginForm({
 
   // --- NEW: Handle Credentials (Email/Password) Login ---
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+  e.preventDefault()
+  setError("")
+  setIsLoading(true)
 
-    try {
-      const result = await signIn('credentials', {
-        // This is crucial: 'redirect: false'
-        // It tells Next-Auth *not* to reload the page.
-        // We will handle the result ourselves.
-        redirect: false,
-        email: email,
-        password: password,
-      })
+  try {
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    })
 
-      console.log(result);
-      
-
-      if (result.error) {
-        // Login failed. 'result.error' will contain our
-        // backend error message ("Invalid email or password.")
-        setError(result.error)
-        setIsLoading(false)
-      } else {
-        // Login was successful!
-        // The session is now active. We can redirect.
-        // We'll reload the page to refresh the session state everywhere.
-        // You can also use router.push('/dashboard') or router.push('/')
-        router.refresh()
-        router.push('/') // Redirect to homepage
-      }
-    } catch (err) {
-      setIsLoading(false)
-      setError("An unexpected error occurred. Please try again.")
+    if (!result) {
+      setError("Something went wrong. Please try again.")
+      return
     }
+
+    // ❗ Core logic: if there is an error → DO NOT redirect
+    if (result.error) {
+      switch (result.error) {
+        case "CredentialsSignin":
+          setError("Invalid email or password.")
+          break
+
+        case "Configuration":
+        case "CallbackRouteError":
+          setError("Something went wrong on the server. Please try again later.")
+          break
+
+        default:
+          setError("An unexpected error occurred. Please try again.")
+      }
+      return
+    }
+
+    // ✅ SUCCESS: only here we redirect
+    router.refresh()
+    router.push("/")
+  } catch (err) {
+    console.error(err)
+    setError("An unexpected error occurred. Please try again.")
+  } finally {
+    setIsLoading(false)
   }
+}
+
+
   // --- END NEW FUNCTION ---
 
   // --- NEW: Handle OAuth (Google/Facebook) Login ---

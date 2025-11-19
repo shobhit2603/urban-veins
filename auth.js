@@ -10,10 +10,8 @@ import bcrypt from "bcryptjs";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: MongoDBAdapter(clientPromise),
 
-  // Helpful while debugging – logs Auth.js internals in dev
   debug: process.env.NODE_ENV === "development",
 
-  // IMPORTANT: credentials + Auth.js v5 → use JWT sessions
   session: {
     strategy: "jwt",
   },
@@ -23,6 +21,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
+
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
@@ -36,8 +35,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
 
       async authorize(credentials) {
+        // ✅ 1. Basic check
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Please provide email and password.");
+          return null;
         }
 
         const client = await clientPromise;
@@ -47,8 +47,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: credentials.email,
         });
 
+        // ❌ OLD: throw new Error("Invalid email or password.")
+        // ✅ 2. For invalid credentials, ALWAYS return null
         if (!user || !user.password) {
-          throw new Error("Invalid email or password.");
+          return null;
         }
 
         const isPasswordMatch = await bcrypt.compare(
@@ -57,19 +59,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         );
 
         if (!isPasswordMatch) {
-          throw new Error("Invalid email or password.");
+          return null;
         }
 
-        // Very important: map MongoDB _id → id and return a plain object
-        return user;
+        // ✅ 3. Return a plain object with `id` (not just Mongo doc)
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role ?? "user",
+        };
       },
     }),
   ],
 
   callbacks: {
-    // Runs on sign in and on every subsequent request
     async jwt({ token, user }) {
-      // On first login, 'user' is defined – copy stuff into the token
       if (user) {
         token.id = user.id;
         token.role = user.role || "user";
@@ -78,7 +83,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async session({ session, token }) {
-      // Copy from token → session so useSession() can see it
       if (session.user && token) {
         session.user.id = token.id;
         session.user.role = token.role;
@@ -89,7 +93,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   pages: {
     signIn: "/login",
-    error: "/login?error=true",
+    // ❌ OLD: error: "/login?error=true",
+    // ✅ MUST be just a path, NextAuth will append ?error=...
+    error: "/login",
   },
-
 });
